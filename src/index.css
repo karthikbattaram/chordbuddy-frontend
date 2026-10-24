@@ -457,13 +457,20 @@ button {
   padding: 12px;
 }
 
-.note-editor input[type='number'] {
+.note-editor select {
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--bg);
   color: var(--text-h);
-  width: 100px;
+  width: 100%;
+}
+
+.line-preview {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text);
+  font-style: italic;
 }
 
 .note-textarea {

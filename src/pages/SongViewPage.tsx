@@ -15,6 +15,12 @@ function pairIndexForLine(lineNumber: number): number {
   return Math.floor((lineNumber - 1) / 2);
 }
 
+function formatLinePreview(line: string): string {
+  const trimmed = line.trim();
+  if (!trimmed) return '(blank line)';
+  return trimmed.length > 40 ? `${trimmed.slice(0, 40)}…` : trimmed;
+}
+
 // A note draft being added/edited in the modal. id is null while creating a new note.
 interface NoteDraft {
   id: string | null;
@@ -96,10 +102,9 @@ function SongViewPage({ songId }: Props) {
     if (!noteDraft) return;
 
     const lineNumber = Number(noteDraft.lineNumber);
-    const totalLines = splitLines(currentSong.content).length;
 
-    if (!Number.isInteger(lineNumber) || lineNumber < 1 || lineNumber > totalLines) {
-      setNoteError(`Line number must be between 1 and ${totalLines}.`);
+    if (!noteDraft.lineNumber || !Number.isInteger(lineNumber)) {
+      setNoteError('Please select a line.');
       return;
     }
     if (!noteDraft.text.trim()) {
@@ -123,6 +128,7 @@ function SongViewPage({ songId }: Props) {
     updateSong(currentSong.id, { notes: updatedNotes });
   }
 
+  const sourceLines = splitLines(currentSong.content);
   const pairs = toLinePairs(displayContent);
 
   const notesByPairIndex = new Map<number, SongNote[]>();
@@ -211,15 +217,25 @@ function SongViewPage({ songId }: Props) {
             {noteDraft ? (
               <div className="note-editor">
                 <label className="field">
-                  <span className="field-label">Line number</span>
-                  <input
-                    type="number"
-                    min={1}
-                    inputMode="numeric"
+                  <span className="field-label">Line</span>
+                  <select
                     value={noteDraft.lineNumber}
                     onChange={(e) => setNoteDraft({ ...noteDraft, lineNumber: e.target.value })}
-                    placeholder="e.g. 3"
-                  />
+                  >
+                    <option value="" disabled>
+                      Select a line…
+                    </option>
+                    {sourceLines.map((line, i) => (
+                      <option key={i} value={i + 1}>
+                        {`${i + 1}. ${formatLinePreview(line)}`}
+                      </option>
+                    ))}
+                  </select>
+                  {noteDraft.lineNumber && (
+                    <p className="line-preview">
+                      Annotating: “{formatLinePreview(sourceLines[Number(noteDraft.lineNumber) - 1] ?? '')}”
+                    </p>
+                  )}
                 </label>
                 <label className="field">
                   <span className="field-label">Note</span>
